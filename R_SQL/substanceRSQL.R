@@ -148,12 +148,15 @@ odbcCloseAll()
 # Limits for date matching 
 max_diff <- 7
 min_diff <- -365
+max_entry_date <- "2016-12-31" # Format "%Y-%m-%d". If no limit leave ""
 
 # The first column of the dataset should be the list of BRCIDs in the cohort.
 # We can retrieve it from the NDTMS file
 
-substance_use <- as.data.table(unique(NDTMS$BrcId))
-colnames(substance_use) <- "BrcId"
+NDTMS <- as.data.table(NDTMS)
+substance_use <- NDTMS[, .SD[which.min(entry_date)], by = BrcId]
+substance_use <- substance_use[, .(BrcId, entry_date)]
+substance_use$entry_date <- as.Date(substance_use$entry_date, "%Y-%m-%d")
 setkey(substance_use, BrcId)
 
 
@@ -237,7 +240,6 @@ substance_use <- news[substance_use] # data.table syntax for right outer join
 # problem substances (up to 3), the units of alcohol consumed, and the
 # drinking days (similar to TOP)
 
-NDTMS <- as.data.table(NDTMS) 
 NDTMS$Triage_Date <- as.Date(NDTMS$Triage_Date, "%Y-%m-%d")
 NDTMS$entry_date <- as.Date(NDTMS$entry_date, "%Y-%m-%d")
 NDTMS$diff <- NDTMS$Triage_Date - NDTMS$entry_date 
@@ -292,6 +294,16 @@ news <- news[, .(BrcId, AAudit_Total_Score, AAudit_Risk_Cat)]
 news$AAudit_Total_Score <- as.numeric(as.character(news$AAudit_Total_Score))
 setkey(news, BrcId)
 substance_use <- news[substance_use] # data.table syntax for right outer join
+
+
+# Before moving on to results consolidation, we filter out too
+# recent entries (past cohort closure, max_entry_date).
+# If no limit is specified the system uses today's date.
+if (max_entry_date == "")
+  max_entry_date <- as.character(Sys.Date())
+
+max_entry_date <- as.Date(max_entry_date, "%Y-%m-%d")
+substance_use <- substance_use[entry_date <= max_entry_date,]
 
 
 

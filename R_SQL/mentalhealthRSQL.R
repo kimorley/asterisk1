@@ -25,7 +25,8 @@ core_query <- readLines("addiction_cohort_core_query.sql")
 core_query <- paste(core_query,collapse="\n")
 
 mental_health <- as.data.table(sqlQuery(con, core_query))
-mental_health <- mental_health[, .(BrcId)]
+mental_health <- mental_health[, .(BrcId, entry_date)]
+mental_health$entry_date <- as.Date(mental_health$entry_date, "%Y-%m-%d")
 setkey(mental_health, BrcId)
 
 #####################################
@@ -139,6 +140,7 @@ odbcCloseAll()
 # Limits for date matching 
 max_diff <- 7
 min_diff <- -365
+max_entry_date <- "2016-12-31" # Format "%Y-%m-%d". If no limit leave ""
 
 
 ### ICD-10 PSYCHOSIS
@@ -195,7 +197,7 @@ setkey(news, BrcId)
 mental_health <- news[mental_health] # data.table syntax for right outer join
 
 # Reassigning names to final columns of mental_health
-colnames(mental_health) <- c("BrcId", "Depression", "Mania", "Psychosis")
+colnames(mental_health) <- c("BrcId", "Depression", "Mania", "Psychosis", "entry_date")
 
 # Converting date difference (no longer used) to binary variable
 mental_health[!is.na(mental_health$Psychosis)]$Psychosis <- 1
@@ -265,6 +267,15 @@ mental_health[sc_ind]$Psychosis <- as.factor(1)
 setkey(mental_health, BrcId)
 bp_ind <- as.character(unique(bp$brcid))
 mental_health[bp_ind]$Mania <- as.factor(1)
+
+# Finally, we filter out too recent entries 
+# (past cohort closure, max_entry_date).
+# If no limit is specified the system uses today's date.
+if (max_entry_date == "")
+  max_entry_date <- as.character(Sys.Date())
+
+max_entry_date <- as.Date(max_entry_date, "%Y-%m-%d")
+mental_health <- mental_health[entry_date <= max_entry_date,]
 
 
 rest <- app_diagnosis[!like(primary_diagnosis, "depress")]

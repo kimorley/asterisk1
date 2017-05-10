@@ -155,6 +155,7 @@ odbcCloseAll()
 # Limits for date matching 
 max_diff <- 7
 min_diff <- -365
+max_entry_date <- "2016-12-31" # Format "%Y-%m-%d". If no limit leave ""
 
 # Begin with EPR form
 sociodemo <- as.data.table(sociodemo)
@@ -278,7 +279,17 @@ age = function(from, to) {
 }
 
 sociodemo$Age <- age(sociodemo$cleaneddateofbirth, sociodemo$entry_date)
-sociodemo[, c("entry_date", "cleaneddateofbirth") := NULL]
+sociodemo[, c("cleaneddateofbirth") := NULL]
+
+
+# Before moving on to results consolidation, we filter out too
+# recent entries (past cohort closure, max_entry_date).
+# If no limit is specified the system uses today's date.
+if (max_entry_date == "")
+  max_entry_date <- as.character(Sys.Date())
+
+max_entry_date <- as.Date(max_entry_date, "%Y-%m-%d")
+sociodemo <- sociodemo[entry_date <= max_entry_date,]
 
 
 #############################################

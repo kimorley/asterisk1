@@ -186,13 +186,16 @@ odbcCloseAll()
 # Limits for date matching 
 max_diff <- 7
 min_diff <- -365
+max_entry_date <- "2016-12-31" # Format "%Y-%m-%d". If no limit leave ""
 
 # The first column of the dataset should be the list of BRCIDs in the cohort.
 # We can retrieve it from the NDTMS file
 
 NDTMS <- as.data.table(NDTMS)
 comorbid <- NDTMS[, .SD[which.min(entry_date)], by = BrcId]
-comorbid <- comorbid[, .(BrcId)]
+comorbid <- comorbid[, .(BrcId, entry_date)]
+comorbid$entry_date <- as.Date(comorbid$entry_date, "%Y-%m-%d")
+setkey(comorbid, BrcId)
 
 
 ### NDTMS FORM ###
@@ -350,12 +353,22 @@ comorbid$BMI_New <- as.numeric(as.character(comorbid$BMI_New))
 comorbid$BMI_nutrition <- as.numeric(as.character(comorbid$BMI_nutrition))
 
 
+# Before moving on to results consolidation, we filter out too
+# recent entries (past cohort closure, max_entry_date).
+# If no limit is specified the system uses today's date.
+if (max_entry_date == "")
+  max_entry_date <- as.character(Sys.Date())
+
+max_entry_date <- as.Date(max_entry_date, "%Y-%m-%d")
+comorbid <- comorbid[entry_date <= max_entry_date,]
+
+
 ####################################
 
 # Now that we have all the necessary data, we proceed to consolidate them
 # into features of interest, starting from obesity.
 
-comorbid$BMI_avg <- rowMeans(comorbid[,2:4], na.rm = TRUE)
+comorbid$BMI_avg <- rowMeans(comorbid[,5:7], na.rm = TRUE)
 comorbid$weight_status <- as.factor("unknown")
 
 comorbid[BMI_avg >= 25]$weight_status <- "overweight"

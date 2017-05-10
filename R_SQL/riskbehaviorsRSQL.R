@@ -106,14 +106,17 @@ odbcCloseAll()
 # Limits for date matching 
 max_diff <- 7
 min_diff <- -365
+max_entry_date <- "" # Format "%Y-%m-%d". If no limit leave ""
 
 # Setting up the final table that will include all data of interest:
 # risk_behavior.
 # The first column of the dataset should be the list of BRCIDs in the cohort.
-# We can retrieve it from the briefRS table
+# We can retrieve it from the briefRS table.
+# we are also preserving entry date for later filtering.
 briefRS <- as.data.table(briefRS)
-risk_behavior <- as.data.table(unique(briefRS$BrcId))
-colnames(risk_behavior) <- "BrcId"
+risk_behavior <- briefRS[, .SD[which.min(entry_date)], by = BrcId]
+risk_behavior <- risk_behavior[, .(BrcId, entry_date)]
+risk_behavior$entry_date <- as.Date(risk_behavior$entry_date, "%Y-%m-%d")
 setkey(risk_behavior, BrcId)
 
 
@@ -185,6 +188,15 @@ news <- news[, .(BrcId, Injected_Total_ID, Injected_Needle_Or_Syringe_ID,
 setkey(news, BrcId)
 risk_behavior <- news[risk_behavior] # data.table syntax for right outer join
 
+
+# Before moving on to results consolidation, we filter out too
+# recent entries (past cohort closure, max_entry_date).
+# If no limit is specified the system uses today's date.
+if (max_entry_date == "")
+  max_entry_date <- as.character(Sys.Date())
+
+max_entry_date <- as.Date(max_entry_date, "%Y-%m-%d")
+risk_behavior <- risk_behavior[entry_date <= max_entry_date,]
 
 #############################
 ### CONSOLIDATING RESULTS ###
