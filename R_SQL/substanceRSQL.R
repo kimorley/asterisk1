@@ -146,9 +146,9 @@ odbcCloseAll()
 # them by date and consolidating them
 
 # Limits for date matching 
-max_diff <- 7
+max_diff <- 28
 min_diff <- -365
-max_entry_date <- "2016-12-31" # Format "%Y-%m-%d". If no limit leave ""
+max_entry_date <- "2017-05-04" # Format "%Y-%m-%d". If no limit leave ""
 
 # The first column of the dataset should be the list of BRCIDs in the cohort.
 # We can retrieve it from the NDTMS file
@@ -156,7 +156,7 @@ max_entry_date <- "2016-12-31" # Format "%Y-%m-%d". If no limit leave ""
 NDTMS <- as.data.table(NDTMS)
 substance_use <- NDTMS[, .SD[which.min(entry_date)], by = BrcId]
 substance_use <- substance_use[, .(BrcId, entry_date)]
-substance_use$entry_date <- as.Date(substance_use$entry_date, "%Y-%m-%d")
+substance_use$entry_date <- as.Date(substance_use$entry_date, "%Y-%m-%d", tz = "Europe/London")
 setkey(substance_use, BrcId)
 
 
@@ -164,8 +164,8 @@ setkey(substance_use, BrcId)
 
 icd10 <- as.data.table(icd10)
 
-icd10$Diagnosis_Date <- as.Date(icd10$Diagnosis_Date, "%Y-%m-%d")
-icd10$entry_date <- as.Date(icd10$entry_date, "%Y-%m-%d")
+icd10$Diagnosis_Date <- as.Date(icd10$Diagnosis_Date, "%Y-%m-%d", tz = "Europe/London")
+icd10$entry_date <- as.Date(icd10$entry_date, "%Y-%m-%d", tz = "Europe/London")
 icd10$diff <- icd10$Diagnosis_Date - icd10$entry_date 
 
 news <- icd10[diff<=max_diff & diff>=min_diff]
@@ -182,8 +182,8 @@ substance_use <- news[substance_use] # data.table syntax for right outer join
 
 TOP <- as.data.table(TOP)
 
-TOP$TOP_Interview_Date <- as.Date(TOP$TOP_Interview_Date, "%Y-%m-%d")
-TOP$entry_date <- as.Date(TOP$entry_date, "%Y-%m-%d")
+TOP$TOP_Interview_Date <- as.Date(TOP$TOP_Interview_Date, "%Y-%m-%d", tz = "Europe/London")
+TOP$entry_date <- as.Date(TOP$entry_date, "%Y-%m-%d", tz = "Europe/London")
 TOP$diff <- TOP$TOP_Interview_Date - TOP$entry_date
 
 news <- TOP[diff<=max_diff & diff>=min_diff]
@@ -240,8 +240,8 @@ substance_use <- news[substance_use] # data.table syntax for right outer join
 # problem substances (up to 3), the units of alcohol consumed, and the
 # drinking days (similar to TOP)
 
-NDTMS$Triage_Date <- as.Date(NDTMS$Triage_Date, "%Y-%m-%d")
-NDTMS$entry_date <- as.Date(NDTMS$entry_date, "%Y-%m-%d")
+NDTMS$Triage_Date <- as.Date(NDTMS$Triage_Date, "%Y-%m-%d", tz = "Europe/London")
+NDTMS$entry_date <- as.Date(NDTMS$entry_date, "%Y-%m-%d", tz = "Europe/London")
 NDTMS$diff <- NDTMS$Triage_Date - NDTMS$entry_date 
 
 news <- NDTMS[diff<=max_diff & diff>=min_diff]
@@ -263,8 +263,8 @@ substance_use <- news[substance_use] # data.table syntax for right outer join
 ### CURRENT DRUG AND ALCOHOL 
 
 Current <- as.data.table(Current)
-Current$Todays_Date <- as.Date(Current$Todays_Date, "%Y-%m-%d")
-Current$entry_date <- as.Date(Current$entry_date, "%Y-%m-%d")
+Current$Todays_Date <- as.Date(Current$Todays_Date, "%Y-%m-%d", tz = "Europe/London")
+Current$entry_date <- as.Date(Current$entry_date, "%Y-%m-%d", tz = "Europe/London")
 Current$diff <- Current$Todays_Date - Current$entry_date 
 
 news <- Current[diff<=max_diff & diff>=min_diff]
@@ -282,8 +282,8 @@ substance_use <- news[substance_use] # data.table syntax for right outer join
 ### AUDIT QUESTIONNAIRE
 
 AUDIT <- as.data.table(AUDIT)
-AUDIT$A_Audit_Assessment_Date <- as.Date(AUDIT$A_Audit_Assessment_Date, "%Y-%m-%d")
-AUDIT$entry_date <- as.Date(AUDIT$entry_date, "%Y-%m-%d")
+AUDIT$A_Audit_Assessment_Date <- as.Date(AUDIT$A_Audit_Assessment_Date, "%Y-%m-%d", tz = "Europe/London")
+AUDIT$entry_date <- as.Date(AUDIT$entry_date, "%Y-%m-%d", tz = "Europe/London")
 AUDIT$diff <- AUDIT$A_Audit_Assessment_Date - AUDIT$entry_date 
 
 news <- AUDIT[diff<=max_diff & diff>=min_diff]
@@ -302,14 +302,99 @@ substance_use <- news[substance_use] # data.table syntax for right outer join
 if (max_entry_date == "")
   max_entry_date <- as.character(Sys.Date())
 
-max_entry_date <- as.Date(max_entry_date, "%Y-%m-%d")
+max_entry_date <- as.Date(max_entry_date, "%Y-%m-%d", tz = "Europe/London")
 substance_use <- substance_use[entry_date <= max_entry_date,]
 
-
-
-# Total empty rows
-ind <- apply(substance_use[,-1], 1, function(x) all(is.na(x)))
 
 # Saving results
 today <- as.character(Sys.Date())
 write.csv(substance_use, paste("substanceRSQL_",today,".csv", sep=""))
+
+
+#######################################
+### FUNCTIONS FOR VARIABLES SUMMARY ###
+#######################################
+
+# Total empty rows
+ind <- apply(substance_use[,2:37], 1, function(x) all(is.na(x)))
+
+
+alcohol_ICD10_tot <- nrow(substance_use[like(Primary_Diag,"F10") |
+                                          like(Secondary_Diag_1,"F10") |
+                                          like(Secondary_Diag_2,"F10") |
+                                          like(Secondary_Diag_3,"F10") |
+                                          like(Secondary_Diag_4,"F10") |
+                                          like(Secondary_Diag_5,"F10") |
+                                          like(Secondary_Diag_6,"F10")])
+
+opioids_ICD10_tot <- nrow(substance_use[like(Primary_Diag,"F11") |
+                                          like(Secondary_Diag_1,"F11") |
+                                          like(Secondary_Diag_2,"F11") |
+                                          like(Secondary_Diag_3,"F11") |
+                                          like(Secondary_Diag_4,"F11") |
+                                          like(Secondary_Diag_5,"F11") |
+                                          like(Secondary_Diag_6,"F11")])
+
+cannabis_ICD10_tot <- nrow(substance_use[like(Primary_Diag,"F12") |
+                                           like(Secondary_Diag_1,"F12") |
+                                           like(Secondary_Diag_2,"F12") |
+                                           like(Secondary_Diag_3,"F12") |
+                                           like(Secondary_Diag_4,"F12") |
+                                           like(Secondary_Diag_5,"F12") |
+                                           like(Secondary_Diag_6,"F12")])
+
+sedatives_ICD10_tot <- nrow(substance_use[like(Primary_Diag,"F13") |
+                                            like(Secondary_Diag_1,"F13") |
+                                            like(Secondary_Diag_2,"F13") |
+                                            like(Secondary_Diag_3,"F13") |
+                                            like(Secondary_Diag_4,"F13") |
+                                            like(Secondary_Diag_5,"F13") |
+                                            like(Secondary_Diag_6,"F13")])
+
+cocaine_ICD10_tot <- nrow(substance_use[like(Primary_Diag,"F14") |
+                                          like(Secondary_Diag_1,"F14") |
+                                          like(Secondary_Diag_2,"F14") |
+                                          like(Secondary_Diag_3,"F14") |
+                                          like(Secondary_Diag_4,"F14") |
+                                          like(Secondary_Diag_5,"F14") |
+                                          like(Secondary_Diag_6,"F14")])
+
+caffeine_ICD10_tot <- nrow(substance_use[like(Primary_Diag,"F15") |
+                                           like(Secondary_Diag_1,"F15") |
+                                           like(Secondary_Diag_2,"F15") |
+                                           like(Secondary_Diag_3,"F15") |
+                                           like(Secondary_Diag_4,"F15") |
+                                           like(Secondary_Diag_5,"F15") |
+                                           like(Secondary_Diag_6,"F15")])
+
+hallucinogen_ICD10_tot <- nrow(substance_use[like(Primary_Diag,"F16") |
+                                               like(Secondary_Diag_1,"F16") |
+                                               like(Secondary_Diag_2,"F16") |
+                                               like(Secondary_Diag_3,"F16") |
+                                               like(Secondary_Diag_4,"F16") |
+                                               like(Secondary_Diag_5,"F16") |
+                                               like(Secondary_Diag_6,"F16")])
+
+tobacco_ICD10_tot <- nrow(substance_use[like(Primary_Diag,"F17") |
+                                          like(Secondary_Diag_1,"F17") |
+                                          like(Secondary_Diag_2,"F17") |
+                                          like(Secondary_Diag_3,"F17") |
+                                          like(Secondary_Diag_4,"F17") |
+                                          like(Secondary_Diag_5,"F17") |
+                                          like(Secondary_Diag_6,"F17")])
+
+solvents_ICD10_tot <- nrow(substance_use[like(Primary_Diag,"F18") |
+                                           like(Secondary_Diag_1,"F18") |
+                                           like(Secondary_Diag_2,"F18") |
+                                           like(Secondary_Diag_3,"F18") |
+                                           like(Secondary_Diag_4,"F18") |
+                                           like(Secondary_Diag_5,"F18") |
+                                           like(Secondary_Diag_6,"F18")])
+
+poly_ICD10_tot <- nrow(substance_use[like(Primary_Diag,"F19") |
+                                       like(Secondary_Diag_1,"F19") |
+                                       like(Secondary_Diag_2,"F19") |
+                                       like(Secondary_Diag_3,"F19") |
+                                       like(Secondary_Diag_4,"F19") |
+                                       like(Secondary_Diag_5,"F19") |
+                                       like(Secondary_Diag_6,"F19")])

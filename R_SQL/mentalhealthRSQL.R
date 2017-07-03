@@ -26,7 +26,7 @@ core_query <- paste(core_query,collapse="\n")
 
 mental_health <- as.data.table(sqlQuery(con, core_query))
 mental_health <- mental_health[, .(BrcId, entry_date)]
-mental_health$entry_date <- as.Date(mental_health$entry_date, "%Y-%m-%d")
+mental_health$entry_date <- as.Date(mental_health$entry_date, "%Y-%m-%d", tz = "Europe/London")
 setkey(mental_health, BrcId)
 
 #####################################
@@ -138,17 +138,17 @@ odbcCloseAll()
 # them by date and consolidating them
 
 # Limits for date matching 
-max_diff <- 7
+max_diff <- 28
 min_diff <- -365
-max_entry_date <- "2016-12-31" # Format "%Y-%m-%d". If no limit leave ""
+max_entry_date <- "2017-05-04" # Format "%Y-%m-%d". If no limit leave ""
 
 
 ### ICD-10 PSYCHOSIS
 
 psychosis <- as.data.table(psychosis)
 
-psychosis$Diagnosis_Date <- as.Date(psychosis$Diagnosis_Date, "%Y-%m-%d")
-psychosis$entry_date <- as.Date(psychosis$entry_date, "%Y-%m-%d")
+psychosis$Diagnosis_Date <- as.Date(psychosis$Diagnosis_Date, "%Y-%m-%d", tz = "Europe/London")
+psychosis$entry_date <- as.Date(psychosis$entry_date, "%Y-%m-%d", tz = "Europe/London")
 psychosis$diff <- psychosis$Diagnosis_Date - psychosis$entry_date 
 
 news <- psychosis[diff<=max_diff & diff>=min_diff]
@@ -165,8 +165,8 @@ mental_health <- news[mental_health] # data.table syntax for right outer join
 
 mania <- as.data.table(mania)
 
-mania$Diagnosis_Date <- as.Date(mania$Diagnosis_Date, "%Y-%m-%d")
-mania$entry_date <- as.Date(mania$entry_date, "%Y-%m-%d")
+mania$Diagnosis_Date <- as.Date(mania$Diagnosis_Date, "%Y-%m-%d", tz = "Europe/London")
+mania$entry_date <- as.Date(mania$entry_date, "%Y-%m-%d", tz = "Europe/London")
 mania$diff <- mania$Diagnosis_Date - mania$entry_date 
 
 news <- mania[diff<=max_diff & diff>=min_diff]
@@ -183,8 +183,8 @@ mental_health <- news[mental_health] # data.table syntax for right outer join
 
 depression <- as.data.table(depression)
 
-depression$Diagnosis_Date <- as.Date(depression$Diagnosis_Date, "%Y-%m-%d")
-depression$entry_date <- as.Date(depression$entry_date, "%Y-%m-%d")
+depression$Diagnosis_Date <- as.Date(depression$Diagnosis_Date, "%Y-%m-%d", tz = "Europe/London")
+depression$entry_date <- as.Date(depression$entry_date, "%Y-%m-%d", tz = "Europe/London")
 depression$diff <- depression$Diagnosis_Date - depression$entry_date 
 
 news <- depression[diff<=max_diff & diff>=min_diff]
@@ -274,7 +274,7 @@ mental_health[bp_ind]$Mania <- as.factor(1)
 if (max_entry_date == "")
   max_entry_date <- as.character(Sys.Date())
 
-max_entry_date <- as.Date(max_entry_date, "%Y-%m-%d")
+max_entry_date <- as.Date(max_entry_date, "%Y-%m-%d", tz = "Europe/London")
 mental_health <- mental_health[entry_date <= max_entry_date,]
 
 

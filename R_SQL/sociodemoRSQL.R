@@ -153,14 +153,14 @@ odbcCloseAll()
 # them by date and consolidating them
 
 # Limits for date matching 
-max_diff <- 7
+max_diff <- 28
 min_diff <- -365
-max_entry_date <- "2016-12-31" # Format "%Y-%m-%d". If no limit leave ""
+max_entry_date <- "2017-05-04" # Format "%Y-%m-%d". If no limit leave ""
 
 # Begin with EPR form
 sociodemo <- as.data.table(sociodemo)
-sociodemo$entry_date <- as.Date(sociodemo$entry_date, "%Y-%m-%d")
-sociodemo$cleaneddateofbirth <- as.Date(sociodemo$cleaneddateofbirth, "%Y-%m-%d")
+sociodemo$entry_date <- as.Date(sociodemo$entry_date, "%Y-%m-%d", tz = "Europe/London")
+sociodemo$cleaneddateofbirth <- as.Date(sociodemo$cleaneddateofbirth, "%Y-%m-%d", tz = "Europe/London")
 
 setkey(sociodemo, BrcId)
 
@@ -183,8 +183,8 @@ sociodemo <- news[sociodemo] # data.table syntax for right outer join
 
 ### BRIEF RISK SCREENING 
 briefRS <- as.data.table(briefRS)
-briefRS$Assessed_Date <- as.Date(briefRS$Assessed_Date, "%Y-%m-%d")
-briefRS$entry_date <- as.Date(briefRS$entry_date, "%Y-%m-%d")
+briefRS$Assessed_Date <- as.Date(briefRS$Assessed_Date, "%Y-%m-%d", tz = "Europe/London")
+briefRS$entry_date <- as.Date(briefRS$entry_date, "%Y-%m-%d", tz = "Europe/London")
 briefRS$diff <- briefRS$Assessed_Date - briefRS$entry_date 
 
 # news <- briefRS[Social_Living_Homeless_Or_Unstable_Housing_ID != "NULL"]
@@ -203,8 +203,8 @@ sociodemo <- news[sociodemo] # data.table syntax for right outer join
 
 ### SLAM NDTMS 
 NDTMS <- as.data.table(NDTMS)
-NDTMS$Triage_Date <- as.Date(NDTMS$Triage_Date, "%Y-%m-%d")
-NDTMS$entry_date <- as.Date(NDTMS$entry_date, "%Y-%m-%d")
+NDTMS$Triage_Date <- as.Date(NDTMS$Triage_Date, "%Y-%m-%d", tz = "Europe/London")
+NDTMS$entry_date <- as.Date(NDTMS$entry_date, "%Y-%m-%d", tz = "Europe/London")
 NDTMS$diff <- NDTMS$Triage_Date - NDTMS$entry_date 
 
 # I can't filter out NULLs because I am interested in 2 columns...
@@ -222,8 +222,8 @@ sociodemo <- news[sociodemo] # data.table syntax for right outer join
 
 riskass <- as.data.table(riskass)
 
-riskass$Assessed_Date <- as.Date(riskass$Assessed_Date, "%Y-%m-%d")
-riskass$entry_date <- as.Date(riskass$entry_date, "%Y-%m-%d")
+riskass$Assessed_Date <- as.Date(riskass$Assessed_Date, "%Y-%m-%d", tz = "Europe/London")
+riskass$entry_date <- as.Date(riskass$entry_date, "%Y-%m-%d", tz = "Europe/London")
 riskass$diff <- riskass$Assessed_Date - riskass$entry_date 
 
 # news <- riskass[Problems_Maintaining_Stability_In_Employment_Relationship_ID != "NULL"]
@@ -240,8 +240,8 @@ sociodemo <- news[sociodemo] # data.table syntax for right outer join
 ### TOP FORM 
 
 TOP <- as.data.table(TOP)
-TOP$TOP_Interview_Date <- as.Date(TOP$TOP_Interview_Date, "%Y-%m-%d")
-TOP$entry_date <- as.Date(TOP$entry_date, "%Y-%m-%d")
+TOP$TOP_Interview_Date <- as.Date(TOP$TOP_Interview_Date, "%Y-%m-%d", tz = "Europe/London")
+TOP$entry_date <- as.Date(TOP$entry_date, "%Y-%m-%d", tz = "Europe/London")
 TOP$diff <- TOP$TOP_Interview_Date - TOP$entry_date 
 
 news <- TOP[diff<=max_diff & diff>=min_diff]
@@ -288,7 +288,7 @@ sociodemo[, c("cleaneddateofbirth") := NULL]
 if (max_entry_date == "")
   max_entry_date <- as.character(Sys.Date())
 
-max_entry_date <- as.Date(max_entry_date, "%Y-%m-%d")
+max_entry_date <- as.Date(max_entry_date, "%Y-%m-%d", tz = "Europe/London")
 sociodemo <- sociodemo[entry_date <= max_entry_date,]
 
 

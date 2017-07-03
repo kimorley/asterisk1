@@ -104,9 +104,9 @@ odbcCloseAll()
 # them by date and consolidating them
 
 # Limits for date matching 
-max_diff <- 7
+max_diff <- 28
 min_diff <- -365
-max_entry_date <- "" # Format "%Y-%m-%d". If no limit leave ""
+max_entry_date <- "2017-05-04" # Format "%Y-%m-%d". If no limit leave ""
 
 # Setting up the final table that will include all data of interest:
 # risk_behavior.
@@ -116,7 +116,7 @@ max_entry_date <- "" # Format "%Y-%m-%d". If no limit leave ""
 briefRS <- as.data.table(briefRS)
 risk_behavior <- briefRS[, .SD[which.min(entry_date)], by = BrcId]
 risk_behavior <- risk_behavior[, .(BrcId, entry_date)]
-risk_behavior$entry_date <- as.Date(risk_behavior$entry_date, "%Y-%m-%d")
+risk_behavior$entry_date <- as.Date(risk_behavior$entry_date, "%Y-%m-%d", tz = "Europe/London")
 setkey(risk_behavior, BrcId)
 
 
@@ -124,8 +124,8 @@ setkey(risk_behavior, BrcId)
 
 # The richest table available is Brief Risk Screening. We
 # just need to clean it by date
-briefRS$Assessed_Date <- as.Date(briefRS$Assessed_Date, "%Y-%m-%d")
-briefRS$entry_date <- as.Date(briefRS$entry_date, "%Y-%m-%d")
+briefRS$Assessed_Date <- as.Date(briefRS$Assessed_Date, "%Y-%m-%d", tz = "Europe/London")
+briefRS$entry_date <- as.Date(briefRS$entry_date, "%Y-%m-%d", tz = "Europe/London")
 briefRS$diff <- briefRS$Assessed_Date - briefRS$entry_date 
 
 news <- briefRS[diff<=max_diff & diff>=min_diff]
@@ -142,8 +142,8 @@ risk_behavior <- news[risk_behavior] # data.table syntax for right outer join
 
 NDTMS <- as.data.table(NDTMS)
 
-NDTMS$Triage_Date <- as.Date(NDTMS$Triage_Date, "%Y-%m-%d")
-NDTMS$entry_date <- as.Date(NDTMS$entry_date, "%Y-%m-%d")
+NDTMS$Triage_Date <- as.Date(NDTMS$Triage_Date, "%Y-%m-%d", tz = "Europe/London")
+NDTMS$entry_date <- as.Date(NDTMS$entry_date, "%Y-%m-%d", tz = "Europe/London")
 NDTMS$diff <- NDTMS$Triage_Date - NDTMS$entry_date 
 
 news <- NDTMS[diff<=max_diff & diff>=min_diff]
@@ -159,8 +159,8 @@ risk_behavior <- news[risk_behavior] # data.table syntax for right outer join
 ### HARM REDUCTION 
 
 harmred <- as.data.table(harmred)
-harmred$Harm_Red_Assessment_Date <- as.Date(harmred$Harm_Red_Assessment_Date, "%Y-%m-%d")
-harmred$entry_date <- as.Date(harmred$entry_date, "%Y-%m-%d")
+harmred$Harm_Red_Assessment_Date <- as.Date(harmred$Harm_Red_Assessment_Date, "%Y-%m-%d", tz = "Europe/London")
+harmred$entry_date <- as.Date(harmred$entry_date, "%Y-%m-%d", tz = "Europe/London")
 harmred$diff <- harmred$Harm_Red_Assessment_Date - harmred$entry_date 
 
 news <- harmred[diff<=max_diff & diff>=min_diff]
@@ -175,8 +175,8 @@ risk_behavior <- news[risk_behavior] # data.table syntax for right outer join
 ### TOP FORM 
 
 TOP <- as.data.table(TOP)
-TOP$TOP_Interview_Date <- as.Date(TOP$TOP_Interview_Date, "%Y-%m-%d")
-TOP$entry_date <- as.Date(TOP$entry_date, "%Y-%m-%d")
+TOP$TOP_Interview_Date <- as.Date(TOP$TOP_Interview_Date, "%Y-%m-%d", tz = "Europe/London")
+TOP$entry_date <- as.Date(TOP$entry_date, "%Y-%m-%d", tz = "Europe/London")
 TOP$diff <- TOP$TOP_Interview_Date - TOP$entry_date 
 
 news <- TOP[diff<=max_diff & diff>=min_diff]
@@ -195,7 +195,7 @@ risk_behavior <- news[risk_behavior] # data.table syntax for right outer join
 if (max_entry_date == "")
   max_entry_date <- as.character(Sys.Date())
 
-max_entry_date <- as.Date(max_entry_date, "%Y-%m-%d")
+max_entry_date <- as.Date(max_entry_date, "%Y-%m-%d", tz = "Europe/London")
 risk_behavior <- risk_behavior[entry_date <= max_entry_date,]
 
 #############################
@@ -259,7 +259,7 @@ risk_behavior[like(Ever_Shared_ID,"Yes")]$sharing <- 1
 risk_behavior[like(Treatment_Issues_Share_Injecting_Equipment_ID,"Yes")]$sharing <- 1
 
 # Checking columns related to high risk sexual behavior
-risk_behavior[like(Sex_Worker_ID,"Not a sex worker")]$high_risk_sex <- -1
+# risk_behavior[like(Sex_Worker_ID,"Not a sex worker")]$high_risk_sex <- -1
 risk_behavior[like(Health_Hight_Risk_Sexual_Behaviour_ID,"No")]$high_risk_sex <- -1
 
 risk_behavior[Sex_Worker_ID %like% "^Selling sex"]$high_risk_sex <- 1
@@ -269,6 +269,10 @@ risk_behavior$injecting_now <- as.factor(risk_behavior$injecting_now)
 risk_behavior$injecting_pre <- as.factor(risk_behavior$injecting_pre)
 risk_behavior$sharing <- as.factor(risk_behavior$sharing)
 risk_behavior$high_risk_sex <- as.factor(risk_behavior$high_risk_sex)
+
+
+# Total empty rows
+ind <- apply(risk_behavior[,2:16], 1, function(x) all(is.na(x)))
 
 # Saving results
 today <- as.character(Sys.Date())
