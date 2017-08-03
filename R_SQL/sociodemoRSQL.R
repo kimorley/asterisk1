@@ -12,7 +12,7 @@
 # - SLAM_NDTMS
 # - Event (for site code and location)
 
-setwd("T:/Giulia Toti/RStudio-SQL") # set working directory to whatever folder contains the core query
+# setwd("T:/Giulia Toti/RStudio-SQL") # set working directory to whatever folder contains the core query
 
 library(RODBC)
 library(data.table)
@@ -125,25 +125,14 @@ order by BrcId"
 query <- paste(head_query,core_query, tail_query)
 NDTMS <- sqlQuery(con, query)
 
-#############################
-### 6th QUERY: EVENT ###
-#############################
+#########################################
+### 6th QUERY: COHORT DEFINITION DATA ###
+#########################################
 
-head_query <- "select n.BrcId, n.entry_date, e.Site_Code, e.Location_Name
-from 
-("
+ungrouped_query <- readLines("addiction_cohort_core_query_ungrouped.sql")
+ungrouped_query <- paste(ungrouped_query,collapse="\n")
 
-core_query <- readLines("addiction_cohort_core_query.sql")
-core_query <- paste(core_query,collapse="\n")
-
-tail_query <- ") n	
-join
-event e
-on n.BrcId = e.BrcId and n.entry_date = e.Start_Date
-order by n.BrcId"
-
-query <- paste(head_query,core_query, tail_query)
-locations <- sqlQuery(con, query)
+event <- sqlQuery(con, ungrouped_query)
 
 odbcCloseAll()
 
@@ -164,13 +153,12 @@ sociodemo$cleaneddateofbirth <- as.Date(sociodemo$cleaneddateofbirth, "%Y-%m-%d"
 
 setkey(sociodemo, BrcId)
 
-# Merge with Site location table
-locations <- as.data.table(locations)
-news <- locations[like(Location_Name, "ADD")]
-news <- news[, .SD[which.min(entry_date)], by = BrcId]
+# Merge with cohort definition table
+event <- as.data.table(event)
+news <- event[, .SD[which.min(entry_date)], by = BrcId]
 
 # Removing unused columns
-news <- news[, .(BrcId, Site_Code, Location_Name)]
+news[, "entry_date" := NULL]
 
 setkey(news, BrcId)
 sociodemo <- news[sociodemo] # data.table syntax for right outer join
@@ -279,7 +267,7 @@ age = function(from, to) {
 }
 
 sociodemo$Age <- age(sociodemo$cleaneddateofbirth, sociodemo$entry_date)
-sociodemo[, c("cleaneddateofbirth") := NULL]
+# sociodemo[, c("cleaneddateofbirth") := NULL]
 
 
 # Before moving on to results consolidation, we filter out too

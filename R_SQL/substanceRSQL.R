@@ -11,7 +11,7 @@
 # - Current_Drug_and_Alcohol
 # - AUDIT
 
-setwd("T:/Giulia Toti/RStudio-SQL") # set working directory to whatever folder contains the core query
+# setwd("T:/Giulia Toti/RStudio-SQL") # set working directory to whatever folder contains the core query
 
 library(RODBC)
 library(data.table)
@@ -315,86 +315,197 @@ write.csv(substance_use, paste("substanceRSQL_",today,".csv", sep=""))
 ### FUNCTIONS FOR VARIABLES SUMMARY ###
 #######################################
 
-# Total empty rows
-ind <- apply(substance_use[,2:37], 1, function(x) all(is.na(x)))
-
-
-alcohol_ICD10_tot <- nrow(substance_use[like(Primary_Diag,"F10") |
-                                          like(Secondary_Diag_1,"F10") |
-                                          like(Secondary_Diag_2,"F10") |
-                                          like(Secondary_Diag_3,"F10") |
-                                          like(Secondary_Diag_4,"F10") |
-                                          like(Secondary_Diag_5,"F10") |
-                                          like(Secondary_Diag_6,"F10")])
-
-opioids_ICD10_tot <- nrow(substance_use[like(Primary_Diag,"F11") |
-                                          like(Secondary_Diag_1,"F11") |
-                                          like(Secondary_Diag_2,"F11") |
-                                          like(Secondary_Diag_3,"F11") |
-                                          like(Secondary_Diag_4,"F11") |
-                                          like(Secondary_Diag_5,"F11") |
-                                          like(Secondary_Diag_6,"F11")])
-
-cannabis_ICD10_tot <- nrow(substance_use[like(Primary_Diag,"F12") |
-                                           like(Secondary_Diag_1,"F12") |
-                                           like(Secondary_Diag_2,"F12") |
-                                           like(Secondary_Diag_3,"F12") |
-                                           like(Secondary_Diag_4,"F12") |
-                                           like(Secondary_Diag_5,"F12") |
-                                           like(Secondary_Diag_6,"F12")])
-
-sedatives_ICD10_tot <- nrow(substance_use[like(Primary_Diag,"F13") |
-                                            like(Secondary_Diag_1,"F13") |
-                                            like(Secondary_Diag_2,"F13") |
-                                            like(Secondary_Diag_3,"F13") |
-                                            like(Secondary_Diag_4,"F13") |
-                                            like(Secondary_Diag_5,"F13") |
-                                            like(Secondary_Diag_6,"F13")])
-
-cocaine_ICD10_tot <- nrow(substance_use[like(Primary_Diag,"F14") |
-                                          like(Secondary_Diag_1,"F14") |
-                                          like(Secondary_Diag_2,"F14") |
-                                          like(Secondary_Diag_3,"F14") |
-                                          like(Secondary_Diag_4,"F14") |
-                                          like(Secondary_Diag_5,"F14") |
-                                          like(Secondary_Diag_6,"F14")])
-
-caffeine_ICD10_tot <- nrow(substance_use[like(Primary_Diag,"F15") |
-                                           like(Secondary_Diag_1,"F15") |
-                                           like(Secondary_Diag_2,"F15") |
-                                           like(Secondary_Diag_3,"F15") |
-                                           like(Secondary_Diag_4,"F15") |
-                                           like(Secondary_Diag_5,"F15") |
-                                           like(Secondary_Diag_6,"F15")])
-
-hallucinogen_ICD10_tot <- nrow(substance_use[like(Primary_Diag,"F16") |
-                                               like(Secondary_Diag_1,"F16") |
-                                               like(Secondary_Diag_2,"F16") |
-                                               like(Secondary_Diag_3,"F16") |
-                                               like(Secondary_Diag_4,"F16") |
-                                               like(Secondary_Diag_5,"F16") |
-                                               like(Secondary_Diag_6,"F16")])
-
-tobacco_ICD10_tot <- nrow(substance_use[like(Primary_Diag,"F17") |
-                                          like(Secondary_Diag_1,"F17") |
-                                          like(Secondary_Diag_2,"F17") |
-                                          like(Secondary_Diag_3,"F17") |
-                                          like(Secondary_Diag_4,"F17") |
-                                          like(Secondary_Diag_5,"F17") |
-                                          like(Secondary_Diag_6,"F17")])
-
-solvents_ICD10_tot <- nrow(substance_use[like(Primary_Diag,"F18") |
-                                           like(Secondary_Diag_1,"F18") |
-                                           like(Secondary_Diag_2,"F18") |
-                                           like(Secondary_Diag_3,"F18") |
-                                           like(Secondary_Diag_4,"F18") |
-                                           like(Secondary_Diag_5,"F18") |
-                                           like(Secondary_Diag_6,"F18")])
-
-poly_ICD10_tot <- nrow(substance_use[like(Primary_Diag,"F19") |
-                                       like(Secondary_Diag_1,"F19") |
-                                       like(Secondary_Diag_2,"F19") |
-                                       like(Secondary_Diag_3,"F19") |
-                                       like(Secondary_Diag_4,"F19") |
-                                       like(Secondary_Diag_5,"F19") |
-                                       like(Secondary_Diag_6,"F19")])
+# # Total empty rows
+# ind <- apply(substance_use[,2:37], 1, function(x) all(is.na(x)))
+# 
+# 
+# alcohol_ICD10_tot <- nrow(substance_use[like(Primary_Diag,"F10") |
+#                                           like(Secondary_Diag_1,"F10") |
+#                                           like(Secondary_Diag_2,"F10") |
+#                                           like(Secondary_Diag_3,"F10") |
+#                                           like(Secondary_Diag_4,"F10") |
+#                                           like(Secondary_Diag_5,"F10") |
+#                                           like(Secondary_Diag_6,"F10")])
+# 
+# opioids_ICD10_tot <- nrow(substance_use[like(Primary_Diag,"F11") |
+#                                           like(Secondary_Diag_1,"F11") |
+#                                           like(Secondary_Diag_2,"F11") |
+#                                           like(Secondary_Diag_3,"F11") |
+#                                           like(Secondary_Diag_4,"F11") |
+#                                           like(Secondary_Diag_5,"F11") |
+#                                           like(Secondary_Diag_6,"F11")])
+# 
+# cannabis_ICD10_tot <- nrow(substance_use[like(Primary_Diag,"F12") |
+#                                            like(Secondary_Diag_1,"F12") |
+#                                            like(Secondary_Diag_2,"F12") |
+#                                            like(Secondary_Diag_3,"F12") |
+#                                            like(Secondary_Diag_4,"F12") |
+#                                            like(Secondary_Diag_5,"F12") |
+#                                            like(Secondary_Diag_6,"F12")])
+# 
+# sedatives_ICD10_tot <- nrow(substance_use[like(Primary_Diag,"F13") |
+#                                             like(Secondary_Diag_1,"F13") |
+#                                             like(Secondary_Diag_2,"F13") |
+#                                             like(Secondary_Diag_3,"F13") |
+#                                             like(Secondary_Diag_4,"F13") |
+#                                             like(Secondary_Diag_5,"F13") |
+#                                             like(Secondary_Diag_6,"F13")])
+# 
+# cocaine_ICD10_tot <- nrow(substance_use[like(Primary_Diag,"F14") |
+#                                           like(Secondary_Diag_1,"F14") |
+#                                           like(Secondary_Diag_2,"F14") |
+#                                           like(Secondary_Diag_3,"F14") |
+#                                           like(Secondary_Diag_4,"F14") |
+#                                           like(Secondary_Diag_5,"F14") |
+#                                           like(Secondary_Diag_6,"F14")])
+# 
+# caffeine_ICD10_tot <- nrow(substance_use[like(Primary_Diag,"F15") |
+#                                            like(Secondary_Diag_1,"F15") |
+#                                            like(Secondary_Diag_2,"F15") |
+#                                            like(Secondary_Diag_3,"F15") |
+#                                            like(Secondary_Diag_4,"F15") |
+#                                            like(Secondary_Diag_5,"F15") |
+#                                            like(Secondary_Diag_6,"F15")])
+# 
+# hallucinogen_ICD10_tot <- nrow(substance_use[like(Primary_Diag,"F16") |
+#                                                like(Secondary_Diag_1,"F16") |
+#                                                like(Secondary_Diag_2,"F16") |
+#                                                like(Secondary_Diag_3,"F16") |
+#                                                like(Secondary_Diag_4,"F16") |
+#                                                like(Secondary_Diag_5,"F16") |
+#                                                like(Secondary_Diag_6,"F16")])
+# 
+# tobacco_ICD10_tot <- nrow(substance_use[like(Primary_Diag,"F17") |
+#                                           like(Secondary_Diag_1,"F17") |
+#                                           like(Secondary_Diag_2,"F17") |
+#                                           like(Secondary_Diag_3,"F17") |
+#                                           like(Secondary_Diag_4,"F17") |
+#                                           like(Secondary_Diag_5,"F17") |
+#                                           like(Secondary_Diag_6,"F17")])
+# 
+# solvents_ICD10_tot <- nrow(substance_use[like(Primary_Diag,"F18") |
+#                                            like(Secondary_Diag_1,"F18") |
+#                                            like(Secondary_Diag_2,"F18") |
+#                                            like(Secondary_Diag_3,"F18") |
+#                                            like(Secondary_Diag_4,"F18") |
+#                                            like(Secondary_Diag_5,"F18") |
+#                                            like(Secondary_Diag_6,"F18")])
+# 
+# poly_ICD10_tot <- nrow(substance_use[like(Primary_Diag,"F19") |
+#                                        like(Secondary_Diag_1,"F19") |
+#                                        like(Secondary_Diag_2,"F19") |
+#                                        like(Secondary_Diag_3,"F19") |
+#                                        like(Secondary_Diag_4,"F19") |
+#                                        like(Secondary_Diag_5,"F19") |
+#                                        like(Secondary_Diag_6,"F19")])
+# 
+# 
+# #######################################
+# ### CLASSIFICATION OF ALCOHOL ABUSE ###
+# #######################################
+# 
+# 
+# alcohol_use<-as.data.table(substance_use)
+# # Eliminating non-alcohol related columns
+# alcohol_use[,21:30] <- NULL 
+# alcohol_use$entry_date <- NULL
+# 
+# # Summarizing list of substances in Current Drug and Alcohol
+# alcohol_use$substanceCDAA <- FALSE
+# alcohol_use$substanceCDAA_level <- 0
+# 
+# alcohol_use[Substance_1_ID == "Alcohol"]$substanceCDAA <- TRUE
+# alcohol_use[Substance_1_ID == "Alcohol"]$substanceCDAA_level <- 1
+# 
+# alcohol_use[Substance_2_ID == "Alcohol"]$substanceCDAA <- TRUE
+# alcohol_use[Substance_2_ID == "Alcohol"]$substanceCDAA_level <- 2
+# 
+# alcohol_use[Substance_3_ID == "Alcohol"]$substanceCDAA <- TRUE
+# alcohol_use[Substance_3_ID == "Alcohol"]$substanceCDAA_level <- 3
+# 
+# alcohol_use[Substance_4_ID == "Alcohol"]$substanceCDAA <- TRUE
+# alcohol_use[Substance_4_ID == "Alcohol"]$substanceCDAA_level <- 4
+# 
+# alcohol_use[Substance_5_ID == "Alcohol"]$substanceCDAA <- TRUE
+# alcohol_use[Substance_5_ID == "Alcohol"]$substanceCDAA_level <- 5
+# 
+# alcohol_use[Substance_6_ID == "Alcohol"]$substanceCDAA <- TRUE
+# alcohol_use[Substance_6_ID == "Alcohol"]$substanceCDAA_level <- 6
+# 
+# alcohol_use[Substance_7_ID == "Alcohol"]$substanceCDAA <- TRUE
+# alcohol_use[Substance_7_ID == "Alcohol"]$substanceCDAA_level <- 7
+# 
+# alcohol_use[Substance_8_ID == "Alcohol"]$substanceCDAA <- TRUE
+# alcohol_use[Substance_8_ID == "Alcohol"]$substanceCDAA_level <- 8
+# 
+# alcohol_use[Substance_9_ID == "Alcohol"]$substanceCDAA <- TRUE
+# alcohol_use[Substance_9_ID == "Alcohol"]$substanceCDAA_level <- 9
+# 
+# alcohol_use[Substance_10_ID == "Alcohol"]$substanceCDAA <- TRUE
+# alcohol_use[Substance_10_ID == "Alcohol"]$substanceCDAA_level <- 10
+# 
+# alcohol_use$substanceCDAA_level <- as.factor(alcohol_use$substanceCDAA_level)
+# 
+# 
+# # Summarizing list of substances in SLAM NDTMS
+# alcohol_use$substanceNDTMS <- FALSE
+# alcohol_use$substanceNDTMS_level <- 0
+# 
+# alcohol_use[Problem_Substance1_ID == "Alcohol"]$substanceNDTMS <- TRUE
+# alcohol_use[Problem_Substance1_ID == "Alcohol"]$substanceNDTMS_level <- 1
+# 
+# alcohol_use[Problem_Substance2_ID == "Alcohol"]$substanceNDTMS <- TRUE
+# alcohol_use[Problem_Substance2_ID == "Alcohol"]$substanceNDTMS_level <- 2
+# 
+# alcohol_use[Problem_Substance3_ID == "Alcohol"]$substanceNDTMS <- TRUE
+# alcohol_use[Problem_Substance3_ID == "Alcohol"]$substanceNDTMS_level <- 3
+# 
+# alcohol_use$substanceNDTMS_level <- as.factor(alcohol_use$substanceNDTMS_level)
+# 
+# 
+# # Summarizing diagnosis (ICD-10 codes)
+# alcohol_use$primary_diagnosis <- FALSE
+# alcohol_use$secondary_diagnosis <- FALSE
+# alcohol_use$secondary_diagnosis_level <- 0
+# 
+# alcohol_use[like(Primary_Diag,"F10")]$primary_diagnosis <- TRUE
+# 
+# alcohol_use[like(Secondary_Diag_1,"F10")]$secondary_diagnosis <- TRUE
+# alcohol_use[like(Secondary_Diag_1,"F10")]$secondary_diagnosis_level <- 1
+# 
+# alcohol_use[like(Secondary_Diag_2,"F10")]$secondary_diagnosis <- TRUE
+# alcohol_use[like(Secondary_Diag_2,"F10")]$secondary_diagnosis_level <- 2
+# 
+# alcohol_use[like(Secondary_Diag_3,"F10")]$secondary_diagnosis <- TRUE
+# alcohol_use[like(Secondary_Diag_3,"F10")]$secondary_diagnosis_level <- 3
+# 
+# alcohol_use[like(Secondary_Diag_4,"F10")]$secondary_diagnosis <- TRUE
+# alcohol_use[like(Secondary_Diag_4,"F10")]$secondary_diagnosis_level <- 4
+# 
+# alcohol_use[like(Secondary_Diag_5,"F10")]$secondary_diagnosis <- TRUE
+# alcohol_use[like(Secondary_Diag_5,"F10")]$secondary_diagnosis_level <- 5
+# 
+# alcohol_use[like(Secondary_Diag_6,"F10")]$secondary_diagnosis <- TRUE
+# alcohol_use[like(Secondary_Diag_6,"F10")]$secondary_diagnosis_level <- 6
+# 
+# alcohol_use$secondary_diagnosis_level <- as.factor(alcohol_use$secondary_diagnosis_level)
+# 
+# 
+# # Consolidating other features
+# alcohol_use$Alcohol_Average <- as.numeric(as.character(alcohol_use$Alcohol_Average))
+# 
+# alcohol_use$Audit_category <- 0 # No category/NA
+# alcohol_use[like(AAudit_Risk_Cat,"ependenc")]$Audit_category <- 4
+# alcohol_use[like(AAudit_Risk_Cat,"armful")]$Audit_category <- 3
+# alcohol_use[like(AAudit_Risk_Cat,"ncreasing")]$Audit_category <- 2
+# alcohol_use[like(AAudit_Risk_Cat,"ower")]$Audit_category <- 1
+# alcohol_use[like(AAudit_Risk_Cat,"women")]$Audit_category <- 2 # special case, evaluated last
+# 
+# alcohol_use$Audit_category <- as.factor(alcohol_use$Audit_category)
+# 
+# # Sample for Nicky
+# set.seed(5)
+# write.csv(alcohol_use[sample(1:nrow(alcohol_use),1000),],"Alcohol_use_sample.csv")
+#
+# 
+# cohort <- cohort[sample(1:nrow(cohort),1000),c(2,18)]

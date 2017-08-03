@@ -10,7 +10,7 @@
 # - SLAM_NDTMS
 # - Harm_Reduction
 
-setwd("T:/Giulia Toti/RStudio-SQL") # set working directory to whatever folder contains the core query
+# setwd("T:/Giulia Toti/RStudio-SQL") # set working directory to whatever folder contains the core query
 
 library(RODBC)
 library(data.table)

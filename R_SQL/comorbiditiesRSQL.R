@@ -18,7 +18,7 @@
 # - Current_Physical_Health_New
 # - Full_nutrition_screen
 
-setwd("T:/Giulia Toti/RStudio-SQL") # set working directory to whatever folder contains the core query
+# setwd("T:/Giulia Toti/RStudio-SQL") # set working directory to whatever folder contains the core query
 
 library(RODBC)
 library(data.table)
@@ -404,14 +404,14 @@ comorbid$HBV_status <- as.factor(comorbid$HBV_status)
 # subjects HIV status. We are going to use a classifier (random
 # forest) to predict the status of unknown patients.
 library(caret)
-setwd("T:/Giulia Toti/HIVclassifier")
+# setwd("T:/Giulia Toti/HIVclassifier")
 mod_tree <- readRDS("HIV_rf_classifier.rds")
 
 # We are only interested in those patients which status is unknown
 cohort <- comorbid[HIV_status == 0][,c(1,17)]
 setkey(cohort, BrcId)
 
-app_results <- as.data.table(read.csv("HIV306app_results.csv"))
+app_results <- as.data.table(read.csv("HIV306app_results_July13.csv"))
 setkey(app_results, BrcId)
 
 # Before moving further, we need to clear this results by date.
@@ -453,7 +453,7 @@ sample$avg_MLpriority[sample$total_mentions==0] <- 0
 sample$pn_ratio[sample$total_mentions==0] <- 0
 
 
-app_treatment <- as.data.table(read.csv("HIV306app_results_treatment.csv", stringsAsFactors = FALSE))
+app_treatment <- as.data.table(read.csv("HIV306app_results_treatment_July13.csv", stringsAsFactors = FALSE))
 setkey(app_treatment, BrcId)
 
 # Before moving further, we need to clear this results by date.
@@ -490,6 +490,10 @@ sample_treat$avg_MLpriority_treat[sample_treat$total_mentions_treat==0] <- 0
 # joining the two final features tables 
 sample <- sample_treat[sample]
 
+# Saving features in final table for future reference
+setkey(sample, BrcId)
+comorbid <- sample[comorbid]
+
 # Some variables have a small variability, it makes sense to 
 # bin them
 sample$avg_prob_treat <- sample$avg_prob_treat > 0
@@ -510,6 +514,6 @@ comorbid[pred %like% 'negative']$HIV_status <- as.factor(0) # We are not sure th
 
 
 # Saving results
-setwd("T:/Giulia Toti/RStudio-SQL") 
+# setwd("T:/Giulia Toti/RStudio-SQL") 
 today <- as.character(Sys.Date())
 write.csv(comorbid, paste("comorbiditiesRSQL_",today,".csv", sep=""))

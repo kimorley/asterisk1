@@ -10,7 +10,7 @@
 # at SQL level, rather than import everything at once and process
 # it in R, which would result in two levels of filtering.
 
-setwd("T:/Giulia Toti/RStudio-SQL") # set working directory to whatever folder contains the core query
+# setwd("T:/Giulia Toti/RStudio-SQL") # set working directory to whatever folder contains the core query
 
 library(RODBC)
 library(data.table)
@@ -207,9 +207,9 @@ mental_health[is.na(mental_health$Mania)]$Mania <- 0
 mental_health[!is.na(mental_health$Depression)]$Depression <- 1
 mental_health[is.na(mental_health$Depression)]$Depression <- 0
 
-mental_health$Psychosis <- as.factor(mental_health$Psychosis)
-mental_health$Mania <- as.factor(mental_health$Mania)
-mental_health$Depression <- as.factor(mental_health$Depression)
+mental_health$Psychosis <- as.logical(mental_health$Psychosis)
+mental_health$Mania <- as.logical(mental_health$Mania)
+mental_health$Depression <- as.logical(mental_health$Depression)
 
 ###########################################
 
@@ -227,7 +227,7 @@ mental_health$Depression <- as.factor(mental_health$Depression)
 # - bipolar --> mania_diagnosis
 
 # Import app results
-app_diagnosis <- as.data.table(read.csv("T:/Giulia Toti/giulia/diagnosis_outputs_final_newentry.csv"))
+app_diagnosis <- as.data.table(read.csv("diagnosis_outputs_final_newentry.csv"))
 
 # Making all entries in diagnosis column lower case for easier matching
 app_diagnosis$primary_diagnosis <- tolower(app_diagnosis$primary_diagnosis)
@@ -243,30 +243,34 @@ mental_health$BrcId <- as.character(mental_health$BrcId)
 setkey(mental_health, BrcId)
 
 # Updating Depression with new results
+mental_health$Depression_app <- FALSE
+mental_health$Mania_app <- FALSE
+mental_health$Psychosis_app <- FALSE
+
 dep_ind <- as.character(unique(dep$brcid))
-mental_health[dep_ind]$Depression <- as.factor(1)
+mental_health[dep_ind]$Depression_app <- TRUE
 
 setkey(mental_health, BrcId)
 ad_ind <- as.character(unique(ad$brcid))
-mental_health[ad_ind]$Depression <- as.factor(1)
+mental_health[ad_ind]$Depression_app <- TRUE
 
 setkey(mental_health, BrcId)
 anx_ind <- as.character(unique(anx$brcid))
-mental_health[anx_ind]$Depression <- as.factor(1)
+mental_health[anx_ind]$Depression_app <- TRUE
 
 # Updating Psychosis with new results
 setkey(mental_health, BrcId)
 psy_ind <- as.character(unique(psy$brcid))
-mental_health[psy_ind]$Psychosis <- as.factor(1)
+mental_health[psy_ind]$Psychosis_app <- TRUE
 
 setkey(mental_health, BrcId)
 sc_ind <- as.character(unique(sc$brcid))
-mental_health[sc_ind]$Psychosis <- as.factor(1)
+mental_health[sc_ind]$Psychosis_app <- TRUE
 
 # Updating Mania with new results
 setkey(mental_health, BrcId)
 bp_ind <- as.character(unique(bp$brcid))
-mental_health[bp_ind]$Mania <- as.factor(1)
+mental_health[bp_ind]$Mania_app <- TRUE
 
 # Finally, we filter out too recent entries 
 # (past cohort closure, max_entry_date).
